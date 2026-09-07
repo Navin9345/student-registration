@@ -101,11 +101,19 @@
             
             const formData = new FormData(form);
             const student = {
-                full_name: formData.get('Full_Name'),
-                email: formData.get('Email'),
-                phone: formData.get('Phone'),
-                course: formData.get('Course')
-            };
+        full_name: formData.get('Full_Name'),
+        email: formData.get('Email'),
+        phone: formData.get('Phone'),
+        age: formData.get('Age') ? parseInt(formData.get('Age')) : null,
+        dob: formData.get('DOB') || null,
+        gender: formData.get('Gender'),
+        course: formData.get('Course'),
+        education: formData.get('Education'),
+        college: formData.get('College'),
+        mode: formData.get('Mode'),
+        address: formData.get('Address'),
+        duration: formData.get('Duration') ? parseInt(formData.get('Duration')) : null
+    };
 
             const btn = form.querySelector('.register');
             btn.innerHTML = "Saving to Database...";
