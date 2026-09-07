@@ -6,15 +6,12 @@
     <link rel="stylesheet" href="Task1.css">
 </head>
 <body>
-
     <div class="container">
         <h1>Course Registration Form</h1>
         <p class="subtitle">Register for your preferred course</p>
         <div class="line"></div>
 
-        <!-- Added id="studentForm" so the script can find it -->
         <form id="studentForm">
-
             <div class="form-row">
                 <div class="field">
                     <label>Full Name</label>
@@ -80,70 +77,52 @@
                 <input type="number" name="Duration" value="3" min="1">
             </div>
 
-            <div class="terms">
-                <label>Terms & Conditions</label>
-                <p>
-                    <input type="checkbox" required> I agree to the <a href="#">Terms & Conditions</a>
-                </p>
-            </div>
-
             <hr>
 
             <div class="buttons">
                 <button type="submit" class="register">Register Now</button>
                 <button type="reset" class="reset">Reset</button>
             </div>
-
-            <!-- New button to download the database -->
-            <div style="margin-top: 15px; text-align: center;">
-                <button type="button" onclick="downloadDatabase()" style="padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold;">
-                    Download Student Data (Excel/CSV)
-                </button>
-            </div>
-
         </form>
     </div>
 
-    <!-- The magic script that saves data without a server -->
+    <!-- Load the Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
+        const SUPABASE_URL = 'https://afenhruhpydamyjbixuv.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_pjAfvVECTNit1TXNSfsK8A_VZvGHCkC';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const form = document.getElementById('studentForm');
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault(); 
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
             const formData = new FormData(form);
-            const student = {};
-            formData.forEach((value, key) => { student[key] = value; });
+            const student = {
+                full_name: formData.get('Full_Name'),
+                email: formData.get('Email'),
+                phone: formData.get('Phone'),
+                course: formData.get('Course')
+            };
 
-            let students = JSON.parse(localStorage.getItem('StudentDatabase')) || [];
-            students.push(student);
-            localStorage.setItem('StudentDatabase', JSON.stringify(students));
+            const btn = form.querySelector('.register');
+            btn.innerHTML = "Saving to Database...";
 
-            alert("Registration Successful! Data saved.");
-            form.reset(); 
-        });
+            const { error } = await supabaseClient
+                .from('registrations')
+                .insert([student]);
 
-        function downloadDatabase() {
-            let students = JSON.parse(localStorage.getItem('StudentDatabase')) || [];
-            if (students.length === 0) {
-                alert("No students registered yet!");
-                return;
+            if (error) {
+                alert("Error: " + error.message);
+                btn.innerHTML = "Register Now";
+            } else {
+                alert("Registration Successful! Saved to Cloud Database.");
+                form.reset();
+                btn.innerHTML = "Register Now";
             }
-            
-            let headers = Object.keys(students[0]).join(",");
-            let rows = students.map(student => Object.values(student).map(val => `"${val}"`).join(",")).join("\n");
-            
-            let csvContent = headers + "\n" + rows;
-            let blob = new Blob([csvContent], { type: 'text/csv' });
-            let url = window.URL.createObjectURL(blob);
-            
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = 'Students_Database.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
+        });
     </script>
 </body>
 </html>
