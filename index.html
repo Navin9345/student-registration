@@ -6,113 +6,84 @@
     <link rel="stylesheet" href="Task1.css">
 </head>
 <body>
+
     <div class="container">
         <h1>Course Registration Form</h1>
         <p class="subtitle">Register for your preferred course</p>
         <div class="line"></div>
 
-        <!-- Form tag updated to point to the PHP file -->
-        <form action="save.php" method="POST" enctype="multipart/form-data">
+        <!-- Added id="studentForm" so the script can find it -->
+        <form id="studentForm">
 
             <div class="form-row">
                 <div class="field">
                     <label>Full Name</label>
-                    <input type="text" name="full_name" placeholder="Enter your full name" required>
+                    <input type="text" name="Full_Name" placeholder="Enter your full name" required>
                 </div>
-
                 <div class="field">
                     <label>Email Address</label>
-                    <input type="email" name="email" placeholder="Enter your email" required>
+                    <input type="email" name="Email" placeholder="Enter your email" required>
                 </div>
-
                 <div class="field">
                     <label>Phone Number</label>
-                    <input type="tel" name="phone" placeholder="Enter phone number" required>
+                    <input type="tel" name="Phone" placeholder="Enter phone number" required>
                 </div>
-
                 <div class="field">
                     <label>Age</label>
-                    <input type="number" name="age" value="18" min="1">
+                    <input type="number" name="Age" value="18" min="1">
                 </div>
-
                 <div class="field">
                     <label>Date of Birth</label>
-                    <input type="date" name="dob">
+                    <input type="date" name="DOB">
                 </div>
-
                 <div class="field">
                     <label>Gender</label>
                     <div class="radio-group">
-                        <label>
-                            <input type="radio" name="gender" value="Male"> Male
-                        </label>
-                        <label>
-                            <input type="radio" name="gender" value="Female"> Female
-                        </label>
-                        <label>
-                            <input type="radio" name="gender" value="Other"> Other
-                        </label>
+                        <label><input type="radio" name="Gender" value="Male"> Male</label>
+                        <label><input type="radio" name="Gender" value="Female"> Female</label>
+                        <label><input type="radio" name="Gender" value="Other"> Other</label>
                     </div>
                 </div>
-
                 <div class="field">
                     <label>Select Course</label>
-                    <select name="course">
+                    <select name="Course">
                         <option value="">Select Course</option>
                         <option value="Web Development">Web Development</option>
                         <option value="Data Science">Data Science</option>
                         <option value="UI/UX Design">UI/UX Design</option>
                     </select>
                 </div>
-
                 <div class="field">
                     <label>Education / Qualification</label>
-                    <input type="text" name="education" placeholder="Enter your qualification">
+                    <input type="text" name="Education" placeholder="Enter your qualification">
                 </div>
-
                 <div class="field">
                     <label>College / Institution</label>
-                    <input type="text" name="college" placeholder="Enter your college or institution">
+                    <input type="text" name="College" placeholder="Enter your college or institution">
                 </div>
-
                 <div class="field">
                     <label>Preferred Learning Mode</label>
                     <div class="radio-group">
-                        <label>
-                            <input type="radio" name="mode" value="Online"> Online
-                        </label>
-                        <label>
-                            <input type="radio" name="mode" value="Offline"> Offline
-                        </label>
+                        <label><input type="radio" name="Mode" value="Online"> Online</label>
+                        <label><input type="radio" name="Mode" value="Offline"> Offline</label>
                     </div>
                 </div>
             </div>
 
             <div class="field">
                 <label>Address</label>
-                <textarea name="address" rows="3" placeholder="Enter your complete address"></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="field">
-                    <label>Upload Profile Photo</label>
-                    <input type="file" name="profile_photo">
-                </div>
-                <div class="field">
-                    <label>Upload ID Proof</label>
-                    <input type="file" name="id_proof">
-                </div>
+                <textarea name="Address" rows="3" placeholder="Enter your complete address"></textarea>
             </div>
 
             <div class="field">
                 <label>Course Duration (in months)</label>
-                <input type="number" name="duration" value="3" min="1">
+                <input type="number" name="Duration" value="3" min="1">
             </div>
 
             <div class="terms">
                 <label>Terms & Conditions</label>
                 <p>
-                    <input type="checkbox" name="terms" required> I agree to the <a href="#">Terms & Conditions</a>
+                    <input type="checkbox" required> I agree to the <a href="#">Terms & Conditions</a>
                 </p>
             </div>
 
@@ -123,7 +94,56 @@
                 <button type="reset" class="reset">Reset</button>
             </div>
 
+            <!-- New button to download the database -->
+            <div style="margin-top: 15px; text-align: center;">
+                <button type="button" onclick="downloadDatabase()" style="padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold;">
+                    Download Student Data (Excel/CSV)
+                </button>
+            </div>
+
         </form>
     </div>
+
+    <!-- The magic script that saves data without a server -->
+    <script>
+        const form = document.getElementById('studentForm');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            
+            const formData = new FormData(form);
+            const student = {};
+            formData.forEach((value, key) => { student[key] = value; });
+
+            let students = JSON.parse(localStorage.getItem('StudentDatabase')) || [];
+            students.push(student);
+            localStorage.setItem('StudentDatabase', JSON.stringify(students));
+
+            alert("Registration Successful! Data saved.");
+            form.reset(); 
+        });
+
+        function downloadDatabase() {
+            let students = JSON.parse(localStorage.getItem('StudentDatabase')) || [];
+            if (students.length === 0) {
+                alert("No students registered yet!");
+                return;
+            }
+            
+            let headers = Object.keys(students[0]).join(",");
+            let rows = students.map(student => Object.values(student).map(val => `"${val}"`).join(",")).join("\n");
+            
+            let csvContent = headers + "\n" + rows;
+            let blob = new Blob([csvContent], { type: 'text/csv' });
+            let url = window.URL.createObjectURL(blob);
+            
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'Students_Database.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
 </body>
 </html>
